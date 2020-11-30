@@ -42,6 +42,7 @@
      <Compile Include="Assets\Scripts\TileSet.cs" />
      <Compile Include="Assets\Scripts\TeamAuthoring.cs" />
      <Compile Include="Assets\Scripts\Action.cs" />
+     <Compile Include="Assets\Scripts\Extensions.cs" />
     <Reference Include="UnityEngine">
         <HintPath>C:/Program Files/Unity/Hub/Editor/2020.1.3f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

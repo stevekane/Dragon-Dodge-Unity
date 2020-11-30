@@ -1,51 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-
-public enum Element { Earth, Fire, Air, Water }
-
-public enum CardinalRotation { North, East, South, West }
-
-[Serializable]
-public struct LayerElement<T> {
-  public Vector2Int Cell;
-  public T Element;
-
-  public LayerElement(Vector2Int cell, T element) {
-    Cell = cell;
-    Element = element;
-  }
-}
-
-[Serializable]
-public struct Tile<T>  {
-  public CardinalRotation CardinalRotation;
-  public T North;
-  public T East;
-  public T South;
-  public T West;
-}
-
-[Serializable]
-public struct PlayablePosition {}
-
-[Serializable]
-public struct Dragon {}
-
-[Serializable]
-public struct Wizard {
-  public int TeamIndex;
-}
-
-public static class Extensions {
-  public static Vector2Int FromWorldPosition(this Vector3 v) {
-    return new Vector2Int(Mathf.RoundToInt(v.x),  Mathf.RoundToInt(v.z));
-  }
-
-  public static Vector3 ToWorldPosition(this Vector2Int v) { 
-    return new Vector3(v.x, 0, v.y);
-  }
-}
 
 public class SampleGame : MonoBehaviour {
   public enum State { 
@@ -79,48 +33,6 @@ public class SampleGame : MonoBehaviour {
   public int SelectedTileIndex = -1;
   public int SelectedPieceIndex = -1;
 
-  public static bool TryGetIndexForCell<T>(List<LayerElement<T>> layer, in Vector2Int cell, out int index) {
-    for (var i = 0; i < layer.Count; i++) {
-      if (layer[i].Cell == cell) {
-        index = i;
-        return true;
-      }
-    }
-    index = -1;
-    return false;
-  }
-
-  public static bool HasMemberForCell<T>(List<LayerElement<T>> layer, in Vector2Int cell) {
-    for (var i = 0; i < layer.Count; i++) {
-      if (layer[i].Cell == cell) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public static bool NeighborOf(in Vector2Int cell, in Vector2Int candidate) {
-    var north = (candidate.x == cell.x && candidate.y == cell.y + 1);
-    var south = (candidate.x == cell.x && candidate.y == cell.y - 1);
-    var east = (candidate.y == cell.y && candidate.x == cell.x + 1);
-    var west = (candidate.y == cell.y && candidate.x == cell.x - 1);
-    
-    return north || south || east || west;
-  }
-
-  public static int FindEmptyNeighborCells(in Board board, in Vector2Int cell, ref List<Vector2Int> indices) {
-    var count = 0;
-    for (var i = 0; i < board.PlayablePositions.Count; i++) {
-      var candidateCell = board.PlayablePositions[i].Cell;
-
-      if (NeighborOf(cell, candidateCell) && !HasMemberForCell(board.Tiles, candidateCell)) {
-        count++;
-        indices.Add(candidateCell);
-      }
-    }
-    return count;
-  }
-
   public static Tile<Element> GenerateTile() {
     var tile =  new Tile<Element>();
 
@@ -129,94 +41,6 @@ public class SampleGame : MonoBehaviour {
     tile.South = (Element)UnityEngine.Random.Range(0, 4);
     tile.West = (Element)UnityEngine.Random.Range(0, 4);
     return tile;
-  }
-
-  public static void BeginRotateTile(SampleGame game) {
-    game.CurrentState = State.RotateTile;
-  }
-
-  public static void BeginMoveTile(SampleGame game) {
-    game.CurrentState = State.MoveTile;
-  }
-
-  public static void BeginPlaceTile(SampleGame game) {
-    game.CurrentState = State.PlaceTile;
-  }
-
-  public static void BeginMoveDragon(SampleGame game) {
-    game.CurrentState = State.MoveDragon;
-  }
-
-  public static void BeginMoveWizard(SampleGame game) {
-    game.CurrentState = State.MoveWizard;
-  }
-
-  public static void RotateTile(SampleGame game, int tileIndex) {
-    var tile = game.Board.Tiles[tileIndex];
-
-    tile.Element.CardinalRotation = (CardinalRotation)(((int)tile.Element.CardinalRotation + 1) % 4);
-    game.Board.Tiles[tileIndex] = tile;
-    game.CurrentState = State.Base;
-  }
-
-  public static void PlaceTile(SampleGame game, int positionIndex) {
-    var tileElement = new LayerElement<Tile<Element>> { 
-      Cell = game.Board.PlayablePositions[positionIndex].Cell,
-      Element = GenerateTile()
-    };
-
-    game.Board.Tiles.Add(tileElement);
-    game.CurrentState = State.Base;
-  }
-
-  public static void SelectTile(SampleGame game, int tileIndex) {
-    game.SelectedTileIndex = tileIndex;
-    game.CurrentState = State.TileToMoveSelected;
-  }
-
-  public static void SelectDragon(SampleGame game, int dragonIndex) {
-    game.SelectedPieceIndex = dragonIndex;
-    game.CurrentState = State.DragonToMoveSelected;
-  }
-
-  public static void SelectWizard(SampleGame game, int wizardIndex) {
-    game.SelectedPieceIndex = wizardIndex;
-    game.CurrentState = State.WizardToMoveSelected;
-  }
-
-  public static void SetCell<T>(List<LayerElement<T>> layer, in int index, in Vector2Int cell) {
-    var layerElement = layer[index];
-
-    layerElement.Cell = cell;
-    layer[index] = layerElement;
-  }
-
-  public static void MoveTile(SampleGame game, Vector2Int cell) {
-    var affectedTile = game.Board.Tiles[game.SelectedTileIndex];
-
-    if (TryGetIndexForCell(game.Board.Dragons, affectedTile.Cell, out int dragonIndex)) {
-      SetCell(game.Board.Dragons, dragonIndex, cell);
-    }
-
-    if (TryGetIndexForCell(game.Board.Wizards, affectedTile.Cell, out int wizardIndex)) {
-      SetCell(game.Board.Wizards, wizardIndex, cell);
-    }
-
-    SetCell(game.Board.Tiles, game.SelectedTileIndex, cell);
-    game.SelectedTileIndex = -1;
-    game.CurrentState = State.Base;
-  }
-
-  public static void MoveDragon(SampleGame game, Vector2Int cell) {
-    SetCell(game.Board.Dragons, game.SelectedPieceIndex, cell);
-    game.SelectedPieceIndex = -1;
-    game.CurrentState = State.Base;
-  }
-
-  public static void MoveWizard(SampleGame game, Vector2Int cell) {
-    SetCell(game.Board.Wizards, game.SelectedPieceIndex, cell);
-    game.SelectedPieceIndex = -1;
-    game.CurrentState = State.Base;
   }
 
   public static void ConvertInputToActions(SampleGame game) {
@@ -241,7 +65,7 @@ public class SampleGame : MonoBehaviour {
 
       case State.RotateTile: {
         if (mouseDown && pickStruckBoard) {
-          if (TryGetIndexForCell(game.Board.Tiles, hit.point.FromWorldPosition(), out int tileIndex)) {
+          if (game.Board.Tiles.TryGetIndexForCell(hit.point.FromWorldPosition(), out int tileIndex)) {
             game.Actions.Add(new Action(Operation.RotateTile, tileIndex));
           }
         }
@@ -250,8 +74,8 @@ public class SampleGame : MonoBehaviour {
 
       case State.PlaceTile: {
         if (mouseDown && pickStruckBoard) {
-          if (TryGetIndexForCell(game.Board.PlayablePositions, hit.point.FromWorldPosition(), out int positionIndex)) {
-            if (!HasMemberForCell(game.Board.Tiles, hit.point.FromWorldPosition())) {
+          if (game.Board.PlayablePositions.TryGetIndexForCell(hit.point.FromWorldPosition(), out int positionIndex)) {
+            if (!game.Board.Tiles.HasMemberForCell(hit.point.FromWorldPosition())) {
               game.Actions.Add(new Action(Operation.PlaceTile, positionIndex));
             }
           }
@@ -261,7 +85,7 @@ public class SampleGame : MonoBehaviour {
 
       case State.MoveTile: {
         if (mouseDown && pickStruckBoard) {
-          if (TryGetIndexForCell(game.Board.Tiles, hit.point.FromWorldPosition(), out int index)) {
+          if (game.Board.Tiles.TryGetIndexForCell(hit.point.FromWorldPosition(), out int index)) {
             game.Actions.Add(new Action(Operation.SelectTile, index));
           }
         }
@@ -270,11 +94,11 @@ public class SampleGame : MonoBehaviour {
 
       case State.TileToMoveSelected: {
         if (mouseDown && pickStruckBoard) {
-          if (TryGetIndexForCell(game.Board.PlayablePositions, hit.point.FromWorldPosition(), out int positionIndex)) {
+          if (game.Board.PlayablePositions.TryGetIndexForCell(hit.point.FromWorldPosition(), out int positionIndex)) {
             var selectedCell = game.Board.Tiles[game.SelectedTileIndex].Cell;
             var candidateCell = game.Board.PlayablePositions[positionIndex].Cell;
             
-            if (!HasMemberForCell(game.Board.Tiles, candidateCell) && NeighborOf(selectedCell, candidateCell)) {
+            if (!game.Board.Tiles.HasMemberForCell(candidateCell) && candidateCell.IsNeighborOf(selectedCell)) {
               game.Actions.Add(new Action(Operation.MoveTile, candidateCell));
             }
           }
@@ -284,11 +108,11 @@ public class SampleGame : MonoBehaviour {
 
       case State.DragonToMoveSelected: {
         if (mouseDown && pickStruckBoard) {
-          if (TryGetIndexForCell(game.Board.Tiles, hit.point.FromWorldPosition(), out int tileIndex)) {
+          if (game.Board.Tiles.TryGetIndexForCell(hit.point.FromWorldPosition(), out int tileIndex)) {
             var selectedCell = game.Board.Dragons[game.SelectedPieceIndex].Cell;
             var candidateCell = game.Board.Tiles[tileIndex].Cell;
 
-            if (NeighborOf(selectedCell, candidateCell) && !HasMemberForCell(game.Board.Dragons, candidateCell)) {
+            if (candidateCell.IsNeighborOf(selectedCell) && !game.Board.Dragons.HasMemberForCell(candidateCell)) {
               game.Actions.Add(new Action(Operation.MoveDragon, candidateCell));
             }
           }
@@ -298,11 +122,11 @@ public class SampleGame : MonoBehaviour {
 
       case State.WizardToMoveSelected: {
         if (mouseDown && pickStruckBoard) {
-          if (TryGetIndexForCell(game.Board.Tiles, hit.point.FromWorldPosition(), out int tileIndex)) {
+          if (game.Board.Tiles.TryGetIndexForCell(hit.point.FromWorldPosition(), out int tileIndex)) {
             var selectedCell = game.Board.Wizards[game.SelectedPieceIndex].Cell;
             var candidateCell = game.Board.Tiles[tileIndex].Cell;
 
-            if (NeighborOf(selectedCell, candidateCell) && !HasMemberForCell(game.Board.Wizards, candidateCell)) {
+            if (candidateCell.IsNeighborOf(selectedCell) && !game.Board.Wizards.HasMemberForCell(candidateCell)) {
               game.Actions.Add(new Action(Operation.MoveWizard, candidateCell));
             }
           }
@@ -312,7 +136,7 @@ public class SampleGame : MonoBehaviour {
 
       case State.MoveDragon: {
         if (mouseDown && pickStruckBoard) {
-          if (TryGetIndexForCell(game.Board.Dragons, hit.point.FromWorldPosition(), out int index)) {
+          if (game.Board.Dragons.TryGetIndexForCell(hit.point.FromWorldPosition(), out int index)) {
             game.Actions.Add(new Action(Operation.SelectDragon, index));
           }
         }
@@ -321,7 +145,7 @@ public class SampleGame : MonoBehaviour {
 
       case State.MoveWizard: {
         if (mouseDown && pickStruckBoard) {
-          if (TryGetIndexForCell(game.Board.Wizards, hit.point.FromWorldPosition(), out int index)) {
+          if (game.Board.Wizards.TryGetIndexForCell(hit.point.FromWorldPosition(), out int index)) {
             game.Actions.Add(new Action(Operation.SelectWizard, index));
           }
         }
@@ -332,56 +156,97 @@ public class SampleGame : MonoBehaviour {
 
   public static void ProcessAction(SampleGame game, in Action action) {
     switch (action.Operation) {
-      case Operation.BeginRotateTile: 
-        BeginRotateTile(game);
+      case Operation.BeginRotateTile: {
+        game.CurrentState = State.RotateTile;
+      }
       break;
 
-      case Operation.BeginMoveTile: 
-        BeginMoveTile(game);
+      case Operation.BeginMoveTile: {
+        game.CurrentState = State.MoveTile;
+      }
       break;
 
-      case Operation.BeginPlaceTile: 
-        BeginPlaceTile(game);
+      case Operation.BeginPlaceTile: {
+        game.CurrentState = State.PlaceTile;
+      }
       break;
 
-      case Operation.BeginMoveWizard: 
-        BeginMoveWizard(game);
+      case Operation.BeginMoveWizard: {
+        game.CurrentState = State.MoveWizard;
+      }
       break;
 
-      case Operation.BeginMoveDragon: 
-        BeginMoveDragon(game);
+      case Operation.BeginMoveDragon: {
+        game.CurrentState = State.MoveDragon;
+      }
       break;
 
-      case Operation.SelectTile:
-        SelectTile(game, action.Index);
+      case Operation.SelectTile: {
+        game.SelectedTileIndex = action.Index;
+        game.CurrentState = State.TileToMoveSelected;
+      }
       break;
 
       case Operation.SelectDragon:
-        SelectDragon(game, action.Index);
+        game.SelectedPieceIndex = action.Index;
+        game.CurrentState = State.DragonToMoveSelected;
       break;
 
-      case Operation.SelectWizard:
-        SelectWizard(game, action.Index);
+      case Operation.SelectWizard: {
+        game.SelectedPieceIndex = action.Index;
+        game.CurrentState = State.WizardToMoveSelected;
+      }
       break;
 
-      case Operation.RotateTile: 
-        RotateTile(game, action.Index);
+      case Operation.RotateTile: {
+        var tile = game.Board.Tiles[action.Index];
+        var rotation = (CardinalRotation)(((int)tile.Element.CardinalRotation + 1) % 4);
+
+        tile.Element.CardinalRotation = rotation;
+        game.Board.Tiles[action.Index] = tile;
+        game.CurrentState = State.Base;
+      }
       break;
 
-      case Operation.PlaceTile:
-        PlaceTile(game, action.Index);
+      case Operation.PlaceTile: {
+        var cell = game.Board.PlayablePositions[action.Index].Cell;
+        var tile = GenerateTile();
+        var tileElement = new LayerElement<Tile<Element>>(cell, tile);
+
+        game.Board.Tiles.Add(tileElement);
+        game.CurrentState = State.Base;
+      }
       break;
 
-      case Operation.MoveTile:
-        MoveTile(game, action.Cell);
+      case Operation.MoveTile: {
+        var affectedTile = game.Board.Tiles[game.SelectedTileIndex];
+
+        if (game.Board.Dragons.TryGetIndexForCell(affectedTile.Cell, out int dragonIndex)) {
+          game.Board.Dragons.SetCell(dragonIndex, action.Cell);
+        }
+
+        if (game.Board.Wizards.TryGetIndexForCell(affectedTile.Cell, out int wizardIndex)) {
+          game.Board.Wizards.SetCell(wizardIndex, action.Cell);
+        }
+
+        game.Board.Tiles.SetCell(game.SelectedTileIndex, action.Cell);
+        game.SelectedTileIndex = -1;
+        game.CurrentState = State.Base;
+      }
       break;
 
-      case Operation.MoveDragon:
-        MoveDragon(game, action.Cell);
+      case Operation.MoveDragon: {
+        game.Board.Dragons.SetCell(game.SelectedPieceIndex, action.Cell);
+        game.SelectedPieceIndex = -1;
+        game.CurrentState = State.Base;
+      }
       break;
 
-      case Operation.MoveWizard:
-        MoveWizard(game, action.Cell);
+      case Operation.MoveWizard: {
+        game.Board.Wizards.SetCell(game.SelectedPieceIndex, action.Cell);
+        game.SelectedPieceIndex = -1;
+        game.CurrentState = State.Base;
+      }
       break;
 
       default:
@@ -433,7 +298,7 @@ public class SampleGame : MonoBehaviour {
       Gizmos.DrawWireCube(Board.Tiles[SelectedTileIndex].Cell.ToWorldPosition() + .2f * Vector3.up, new Vector3(.9f, 0, .9f));
 
       var indices = new List<Vector2Int>();
-      var count = FindEmptyNeighborCells(Board, Board.Tiles[SelectedTileIndex].Cell, ref indices);
+      var count = Board.FindEmptyNeighborCells(Board.Tiles[SelectedTileIndex].Cell, ref indices);
 
       Gizmos.color = Color.magenta;
       foreach (var c in indices) {
