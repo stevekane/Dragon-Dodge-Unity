@@ -7,13 +7,15 @@ public enum Element { Earth, Fire, Air, Water }
 public enum CardinalRotation { North, East, South, West }
 
 [Serializable]
-public struct LayerElement<T> {
+public struct LayerElement<T, R> {
   public Vector2Int Cell;
   public T Element;
+  public R Renderable;
 
-  public LayerElement(Vector2Int cell, T element) {
+  public LayerElement(Vector2Int cell, T element, R renderable) {
     Cell = cell;
     Element = element;
+    Renderable = renderable;
   }
 }
 
@@ -47,57 +49,61 @@ public class BoardAuthoring : MonoBehaviour {
 
 [Serializable]
 public struct Board {
-  public List<LayerElement<PlayablePosition>> PlayablePositions;
-  public List<LayerElement<Tile<Element>>> Tiles;
-  public List<LayerElement<Dragon>> Dragons;
-  public List<LayerElement<Wizard>> Wizards;
+  public List<LayerElement<PlayablePosition, RenderablePlayablePosition>> PlayablePositions;
+  public List<LayerElement<Tile<Element>, RenderableTile>> Tiles;
+  public List<LayerElement<Dragon, RenderableDragon>> Dragons;
+  public List<LayerElement<Wizard, RenderableWizard>> Wizards;
 
-  public void PopulatePlayablePositions(List<GameObject> positionMarkers) {
+  public void PopulatePlayablePositions(List<GameObject> positionMarkers, RenderablePlayablePosition prefab) {
     for (int i = 0; i < positionMarkers.Count; i++) {
       var cell = positionMarkers[i].transform.position.FromWorldPosition();
       var position = default(PlayablePosition);
+      var renderable = RenderablePlayablePosition.Instantiate(prefab);
 
-      PlayablePositions.Add(new LayerElement<PlayablePosition>(cell, position));
+      PlayablePositions.Add(new LayerElement<PlayablePosition, RenderablePlayablePosition>(cell, position, renderable));
     }
   }
 
-  public void PlaceTiles(List<GameObject> positionMarkers, Tile<Element>[] tiles) {
+  public void PlaceTiles(List<GameObject> positionMarkers, Tile<Element>[] tiles, RenderableTile prefab) {
     for (int i = 0; i < tiles.Length; i++) {
       var cell = positionMarkers[i].transform.position.FromWorldPosition();
       var tile = tiles[i];
+      var renderable = RenderableTile.Instantiate(prefab);
 
-      Tiles.Add(new LayerElement<Tile<Element>>(cell, tile));
+      Tiles.Add(new LayerElement<Tile<Element>, RenderableTile>(cell, tile, renderable));
     }
   }
 
-  public void PlaceDragons(List<GameObject> positionMarkers) {
+  public void PlaceDragons(List<GameObject> positionMarkers, RenderableDragon prefab) {
     for (int i = 0; i < positionMarkers.Count; i++) {
       var cell = positionMarkers[i].transform.position.FromWorldPosition();
       var dragon = default(Dragon);
+      var renderable = RenderableDragon.Instantiate(prefab);
 
-      Dragons.Add(new LayerElement<Dragon>(cell, dragon));
+      Dragons.Add(new LayerElement<Dragon, RenderableDragon>(cell, dragon, renderable));
     }
   }
 
-  public void PlaceWizards(List<GameObject> positionMarkers) {
+  public void PlaceWizards(List<GameObject> positionMarkers, RenderableWizard prefab) {
     for (int i = 0; i < positionMarkers.Count; i++) {
       var team = positionMarkers[i].GetComponent<TeamAuthoring>();
       var cell = positionMarkers[i].transform.position.FromWorldPosition();
       var wizard = new Wizard { TeamIndex = team.Index };
+      var renderable = RenderableWizard.Instantiate(prefab);
 
-      Wizards.Add(new LayerElement<Wizard>(cell, wizard));
+      Wizards.Add(new LayerElement<Wizard, RenderableWizard>(cell, wizard, renderable));
     }
   }
 
-  public Board(BoardAuthoring board, TileSet tileSet) {
-    PlayablePositions = new List<LayerElement<PlayablePosition>>(board.PlayablePositions.Count);
-    Tiles = new List<LayerElement<Tile<Element>>>(board.Tiles.Count);
-    Dragons = new List<LayerElement<Dragon>>(board.Dragons.Count);
-    Wizards = new List<LayerElement<Wizard>>(board.Wizards.Count);
+  public Board(BoardAuthoring board, TileSet tileSet, BoardRenderables boardRenderables) {
+    PlayablePositions = new List<LayerElement<PlayablePosition, RenderablePlayablePosition>>(board.PlayablePositions.Count);
+    Tiles = new List<LayerElement<Tile<Element>, RenderableTile>>(board.Tiles.Count);
+    Dragons = new List<LayerElement<Dragon, RenderableDragon>>(board.Dragons.Count);
+    Wizards = new List<LayerElement<Wizard, RenderableWizard>>(board.Wizards.Count);
 
-    PopulatePlayablePositions(board.PlayablePositions);
-    PlaceTiles(board.Tiles, tileSet.Tiles);
-    PlaceDragons(board.Dragons);
-    PlaceWizards(board.Wizards);
+    PopulatePlayablePositions(board.PlayablePositions, boardRenderables.PlayablePositionPrefab);
+    PlaceTiles(board.Tiles, tileSet.Tiles, boardRenderables.TilePrefab);
+    PlaceDragons(board.Dragons, boardRenderables.DragonPrefab);
+    PlaceWizards(board.Wizards, boardRenderables.WizardPrefab);
   }
 }

@@ -13,7 +13,12 @@ public enum Operation {
   PlaceTile,
   MoveTile,
   MoveDragon,
-  MoveWizard
+  MoveWizard,
+  MovingTile,
+  RotatingTile,
+  PlacingTile,
+  MovingDragon,
+  MovingWizard
 }
 
 public struct Action {

@@ -10,7 +10,7 @@ public static class Extensions {
     return new Vector3(v.x, 0, v.y);
   }
 
-  public static bool TryGetIndexForCell<T>(this List<LayerElement<T>> layer, in Vector2Int cell, out int index) {
+  public static bool TryGetIndexForCell<T, R>(this List<LayerElement<T, R>> layer, in Vector2Int cell, out int index) {
     for (var i = 0; i < layer.Count; i++) {
       if (layer[i].Cell == cell) {
         index = i;
@@ -21,7 +21,7 @@ public static class Extensions {
     return false;
   }
 
-  public static bool HasMemberForCell<T>(this List<LayerElement<T>> layer, in Vector2Int cell) {
+  public static bool HasMemberForCell<T, R>(this List<LayerElement<T, R>> layer, in Vector2Int cell) {
     for (var i = 0; i < layer.Count; i++) {
       if (layer[i].Cell == cell) {
         return true;
@@ -39,20 +39,7 @@ public static class Extensions {
     return north || south || east || west;
   }
 
-  public static int FindEmptyNeighborCells(this in Board board, in Vector2Int cell, ref List<Vector2Int> indices) {
-    var count = 0;
-    for (var i = 0; i < board.PlayablePositions.Count; i++) {
-      var candidateCell = board.PlayablePositions[i].Cell;
-
-      if (cell.IsNeighborOf(candidateCell) && !HasMemberForCell(board.Tiles, candidateCell)) {
-        count++;
-        indices.Add(candidateCell);
-      }
-    }
-    return count;
-  }
-
-  public static void SetCell<T>(this List<LayerElement<T>> layer, in int index, in Vector2Int cell) {
+  public static void SetCell<T, R>(this List<LayerElement<T, R>> layer, in int index, in Vector2Int cell) {
     var layerElement = layer[index];
 
     layerElement.Cell = cell;

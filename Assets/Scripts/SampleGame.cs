@@ -11,7 +11,12 @@ public class SampleGame : MonoBehaviour {
     MoveWizard,
     TileToMoveSelected, 
     DragonToMoveSelected,
-    WizardToMoveSelected
+    WizardToMoveSelected,
+    RotatingTile,
+    PlacingTile,
+    MovingTile,
+    MovingDragon,
+    MovingWizard
   }
 
   [Header("Visualization")]
@@ -23,6 +28,7 @@ public class SampleGame : MonoBehaviour {
   [Header("Authoring")]
   public BoardAuthoring AuthoringBoard;
   public TileSet TileSet;
+  public BoardRenderables BoardRenderables;
 
   [Header("Runtime")]
   public Board Board;
@@ -211,7 +217,8 @@ public class SampleGame : MonoBehaviour {
       case Operation.PlaceTile: {
         var cell = game.Board.PlayablePositions[action.Index].Cell;
         var tile = GenerateTile();
-        var tileElement = new LayerElement<Tile<Element>>(cell, tile);
+        var renderable = RenderableTile.Instantiate(game.BoardRenderables.TilePrefab);
+        var tileElement = new LayerElement<Tile<Element>, RenderableTile>(cell, tile, renderable);
 
         game.Board.Tiles.Add(tileElement);
         game.CurrentState = State.Base;
@@ -255,60 +262,104 @@ public class SampleGame : MonoBehaviour {
     }
   }
 
+  public static void ProcessActionForRenderables(SampleGame game, in Action action) {
+    switch (action.Operation) {
+      case Operation.BeginRotateTile: {
+      }
+      break;
+
+      case Operation.BeginMoveTile: {
+      }
+      break;
+
+      case Operation.BeginPlaceTile: {
+      }
+      break;
+
+      case Operation.BeginMoveWizard: {
+      }
+      break;
+
+      case Operation.BeginMoveDragon: {
+      }
+      break;
+
+      case Operation.SelectTile: {
+        var selectedCell = game.Board.Tiles[game.SelectedTileIndex].Cell;
+
+        for (var i = 0; i < game.Board.PlayablePositions.Count; i++) {
+          var playablePosition = game.Board.PlayablePositions[i];
+          var isNeighbor = playablePosition.Cell.IsNeighborOf(selectedCell);
+          var isEmpty = !game.Board.Tiles.HasMemberForCell(playablePosition.Cell);
+
+          playablePosition.Renderable.Animator.SetFloat("Highlight", isNeighbor && isEmpty ? 1f : 0f);
+        }
+      }
+      break;
+
+      case Operation.SelectDragon:
+      break;
+
+      case Operation.SelectWizard: {
+      }
+      break;
+
+      case Operation.RotateTile: {
+      }
+      break;
+
+      case Operation.PlaceTile: {
+      }
+      break;
+
+      case Operation.MoveTile: {
+        for (var i = 0; i < game.Board.PlayablePositions.Count; i++) {
+          game.Board.PlayablePositions[i].Renderable.Animator.SetFloat("Highlight", 0f);
+        }
+      }
+      break;
+
+      case Operation.MoveDragon: {
+      }
+      break;
+
+      case Operation.MoveWizard: {
+      }
+      break;
+
+      default:
+        Debug.LogError($"Un-handled Renderable Operation: {action.Operation}.");
+      break;
+    }
+  }
+
   public static void LogAction(Action action) {
     Debug.Log($"{action.Operation} on frame {Time.frameCount}");
   }
 
-  void OnDrawGizmos() {
-    if (!Application.isPlaying)
-        return;
-    
-    Gizmos.color = Color.black;
-    foreach (var e in Board.PlayablePositions) {
-        Gizmos.DrawWireCube(e.Cell.ToWorldPosition(), new Vector3(.9f, 0, .9f));
+  public static void UpdateRenderables(SampleGame game) {
+    foreach (var e in game.Board.PlayablePositions) {
+      e.Renderable.transform.position = e.Cell.ToWorldPosition();
     }
 
-    Gizmos.color = Color.white;
-    foreach (var e in Board.Tiles) {
-      var index = (int)e.Element.CardinalRotation;
-      var center = e.Cell.ToWorldPosition() + .1f * Vector3.up;
+    foreach (var e in game.Board.Tiles) {
+      var position = e.Cell.ToWorldPosition();
+      var rotation = Quaternion.AngleAxis(90f * (int)e.Element.CardinalRotation, Vector3.up);
 
-      Gizmos.color = TileElementColors[(int)e.Element.North];
-      Gizmos.DrawLine(center, center + Quaternion.AngleAxis(90f * index, Vector3.up) * (.4f * Vector3.forward));
-      Gizmos.color = TileElementColors[(int)e.Element.East];
-      Gizmos.DrawLine(center, center + Quaternion.AngleAxis(90f * index, Vector3.up) * (.4f * Vector3.right));
-      Gizmos.color = TileElementColors[(int)e.Element.South];
-      Gizmos.DrawLine(center, center + Quaternion.AngleAxis(90f * index, Vector3.up) * (.4f * -Vector3.forward));
-      Gizmos.color = TileElementColors[(int)e.Element.West];
-      Gizmos.DrawLine(center, center + Quaternion.AngleAxis(90f * index, Vector3.up) * (.4f * -Vector3.right));
+      e.Renderable.transform.SetPositionAndRotation(position, rotation);
     }
 
-    Gizmos.color = Color.red;
-    foreach (var e in Board.Dragons) {
-      Gizmos.DrawWireCube(e.Cell.ToWorldPosition() + .5f * Vector3.up, new Vector3(.5f, 1f, .5f));
+    foreach (var e in game.Board.Dragons) {
+      e.Renderable.transform.position = e.Cell.ToWorldPosition();
     }
 
-    foreach (var e in Board.Wizards) {
-      Gizmos.color = e.Element.TeamIndex % 2 == 0 ? Color.green : Color.blue;
-      Gizmos.DrawWireCube(e.Cell.ToWorldPosition() + .25f * Vector3.up, new Vector3(.25f, .5f, .25f));
-    }
-
-    if (SelectedTileIndex >= 0) {
-      Gizmos.color = Color.yellow;
-      Gizmos.DrawWireCube(Board.Tiles[SelectedTileIndex].Cell.ToWorldPosition() + .2f * Vector3.up, new Vector3(.9f, 0, .9f));
-
-      var indices = new List<Vector2Int>();
-      var count = Board.FindEmptyNeighborCells(Board.Tiles[SelectedTileIndex].Cell, ref indices);
-
-      Gizmos.color = Color.magenta;
-      foreach (var c in indices) {
-        Gizmos.DrawWireCube(c.ToWorldPosition() + .2f * Vector3.up, new Vector3(.9f, 0, .9f));
-      }
+    foreach (var e in game.Board.Wizards) {
+      e.Renderable.transform.position = e.Cell.ToWorldPosition();
     }
   }
 
   void Awake() {
-    Board = new Board(AuthoringBoard, TileSet);
+    Board = new Board(AuthoringBoard, TileSet, BoardRenderables);
     Destroy(AuthoringBoard.gameObject);
   }
 
@@ -317,8 +368,9 @@ public class SampleGame : MonoBehaviour {
     ConvertInputToActions(this);
     for (int i = 0; i < Actions.Count; i++) {
       ProcessAction(this, Actions[i]);
-      // ProcessActionForRenderer(this, Actions[i]);
+      ProcessActionForRenderables(this, Actions[i]);
       LogAction(Actions[i]);
     }
+    UpdateRenderables(this);
   }
 }
