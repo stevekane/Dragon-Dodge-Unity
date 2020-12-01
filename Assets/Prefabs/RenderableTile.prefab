@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8560316249247810557}
   - component: {fileID: 8560316249247810554}
+  - component: {fileID: 5086808042923165156}
   m_Layer: 0
   m_Name: RenderableTile
   m_TagString: Untagged
@@ -44,6 +45,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e845eeb6659977498ea798589709f8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Animator: {fileID: 5086808042923165156}
+--- !u!95 &5086808042923165156
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8560316249247810556}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 82d7c3d0b5dad3b4f883bd25dfcdef26, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!1 &8560316249287941738
 GameObject:
   m_ObjectHideFlags: 0
@@ -103,7 +124,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
+  - {fileID: 2100000, guid: 1ce91743dbf1b9642a2338e969647d36, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

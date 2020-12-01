@@ -15,4 +15,4 @@ MonoBehaviour:
   PlayablePositionPrefab: {fileID: 1548932875674055730, guid: 905f6b38d40bb5a428bf84fe40c91008, type: 3}
   TilePrefab: {fileID: 8560316249247810554, guid: c8bf632cbf44d9446a672f543f51b95b, type: 3}
   DragonPrefab: {fileID: 5348574559497713207, guid: 6b3166df77036e04890af40bc0dc5b86, type: 3}
-  WizardPrefab: {fileID: 3446855174543094322, guid: 44a332465c239eb4f941e1f6bb9cad1e, type: 3}
+  WizardPrefab: {fileID: 7952199571688589246, guid: 44a332465c239eb4f941e1f6bb9cad1e, type: 3}

@@ -22,6 +22,9 @@ public class SampleGame : MonoBehaviour {
   [Header("Visualization")]
   public Color[] TileElementColors;
 
+  [Header("Renderin")]
+  public float InterpolationEpsilon = .001f;
+
   [Header("Camera")]
   public Camera MainCamera;
 
@@ -162,6 +165,11 @@ public class SampleGame : MonoBehaviour {
 
   public static void ProcessAction(SampleGame game, in Action action) {
     switch (action.Operation) {
+      case Operation.PassTime: {
+
+      }
+      break;
+
       case Operation.BeginRotateTile: {
         game.CurrentState = State.RotateTile;
       }
@@ -190,6 +198,17 @@ public class SampleGame : MonoBehaviour {
       case Operation.SelectTile: {
         game.SelectedTileIndex = action.Index;
         game.CurrentState = State.TileToMoveSelected;
+
+        var selectedTile = game.Board.Tiles[game.SelectedTileIndex];
+
+        selectedTile.Renderable.Animator.SetInteger("State", 2);
+        for (var i = 0; i < game.Board.PlayablePositions.Count; i++) {
+          var playablePosition = game.Board.PlayablePositions[i];
+          var isNeighbor = playablePosition.Cell.IsNeighborOf(selectedTile.Cell);
+          var isEmpty = !game.Board.Tiles.HasMemberForCell(playablePosition.Cell);
+
+          playablePosition.Renderable.Animator.SetInteger("State", isNeighbor && isEmpty ? 1 : 0);
+        }
       }
       break;
 
@@ -228,6 +247,11 @@ public class SampleGame : MonoBehaviour {
       case Operation.MoveTile: {
         var affectedTile = game.Board.Tiles[game.SelectedTileIndex];
 
+        affectedTile.Renderable.Animator.SetInteger("State", 0);
+        for (var i = 0; i < game.Board.PlayablePositions.Count; i++) {
+          game.Board.PlayablePositions[i].Renderable.Animator.SetInteger("State", 0);
+        }
+
         if (game.Board.Dragons.TryGetIndexForCell(affectedTile.Cell, out int dragonIndex)) {
           game.Board.Dragons.SetCell(dragonIndex, action.Cell);
         }
@@ -262,76 +286,6 @@ public class SampleGame : MonoBehaviour {
     }
   }
 
-  public static void ProcessActionForRenderables(SampleGame game, in Action action) {
-    switch (action.Operation) {
-      case Operation.BeginRotateTile: {
-      }
-      break;
-
-      case Operation.BeginMoveTile: {
-      }
-      break;
-
-      case Operation.BeginPlaceTile: {
-      }
-      break;
-
-      case Operation.BeginMoveWizard: {
-      }
-      break;
-
-      case Operation.BeginMoveDragon: {
-      }
-      break;
-
-      case Operation.SelectTile: {
-        var selectedCell = game.Board.Tiles[game.SelectedTileIndex].Cell;
-
-        for (var i = 0; i < game.Board.PlayablePositions.Count; i++) {
-          var playablePosition = game.Board.PlayablePositions[i];
-          var isNeighbor = playablePosition.Cell.IsNeighborOf(selectedCell);
-          var isEmpty = !game.Board.Tiles.HasMemberForCell(playablePosition.Cell);
-
-          playablePosition.Renderable.Animator.SetFloat("Highlight", isNeighbor && isEmpty ? 1f : 0f);
-        }
-      }
-      break;
-
-      case Operation.SelectDragon:
-      break;
-
-      case Operation.SelectWizard: {
-      }
-      break;
-
-      case Operation.RotateTile: {
-      }
-      break;
-
-      case Operation.PlaceTile: {
-      }
-      break;
-
-      case Operation.MoveTile: {
-        for (var i = 0; i < game.Board.PlayablePositions.Count; i++) {
-          game.Board.PlayablePositions[i].Renderable.Animator.SetFloat("Highlight", 0f);
-        }
-      }
-      break;
-
-      case Operation.MoveDragon: {
-      }
-      break;
-
-      case Operation.MoveWizard: {
-      }
-      break;
-
-      default:
-        Debug.LogError($"Un-handled Renderable Operation: {action.Operation}.");
-      break;
-    }
-  }
 
   public static void LogAction(Action action) {
     Debug.Log($"{action.Operation} on frame {Time.frameCount}");
@@ -339,37 +293,35 @@ public class SampleGame : MonoBehaviour {
 
   public static void UpdateRenderables(SampleGame game) {
     foreach (var e in game.Board.PlayablePositions) {
-      e.Renderable.transform.position = e.Cell.ToWorldPosition();
+      e.Renderable.transform.position = Vector3.Lerp(e.Renderable.transform.position, e.Cell.ToWorldPosition(), game.InterpolationEpsilon);
     }
 
     foreach (var e in game.Board.Tiles) {
-      var position = e.Cell.ToWorldPosition();
-      var rotation = Quaternion.AngleAxis(90f * (int)e.Element.CardinalRotation, Vector3.up);
+      var position = Vector3.Lerp(e.Renderable.transform.position, e.Cell.ToWorldPosition(), game.InterpolationEpsilon);
+      var rotation = Quaternion.Slerp(e.Renderable.transform.rotation, Quaternion.AngleAxis(90f * (int)e.Element.CardinalRotation, Vector3.up), game.InterpolationEpsilon);
 
       e.Renderable.transform.SetPositionAndRotation(position, rotation);
     }
 
     foreach (var e in game.Board.Dragons) {
-      e.Renderable.transform.position = e.Cell.ToWorldPosition();
+      e.Renderable.transform.position = Vector3.Lerp(e.Renderable.transform.position, e.Cell.ToWorldPosition(), game.InterpolationEpsilon);
     }
 
     foreach (var e in game.Board.Wizards) {
-      e.Renderable.transform.position = e.Cell.ToWorldPosition();
+      e.Renderable.transform.position = Vector3.Lerp(e.Renderable.transform.position, e.Cell.ToWorldPosition(), game.InterpolationEpsilon);
     }
   }
 
   void Awake() {
     Board = new Board(AuthoringBoard, TileSet, BoardRenderables);
-    Destroy(AuthoringBoard.gameObject);
   }
 
   void Update() {
     Actions.Clear();
+    Actions.Add(new Action(Operation.PassTime, Time.deltaTime));
     ConvertInputToActions(this);
     for (int i = 0; i < Actions.Count; i++) {
       ProcessAction(this, Actions[i]);
-      ProcessActionForRenderables(this, Actions[i]);
-      LogAction(Actions[i]);
     }
     UpdateRenderables(this);
   }

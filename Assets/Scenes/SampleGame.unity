@@ -549,6 +549,7 @@ MonoBehaviour:
   - {r: 1, g: 0, b: 0, a: 1}
   - {r: 1, g: 1, b: 1, a: 1}
   - {r: 0, g: 0, b: 1, a: 1}
+  InterpolationEpsilon: 0.1
   MainCamera: {fileID: 977556414}
   AuthoringBoard: {fileID: 625431424}
   TileSet: {fileID: 11400000, guid: 1f04930b1f551524381652fd3a609fad, type: 2}

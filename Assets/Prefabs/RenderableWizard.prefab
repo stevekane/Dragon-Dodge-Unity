@@ -104,7 +104,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3446855174543094323}
-  - component: {fileID: 3446855174543094322}
+  - component: {fileID: 7952199571688589246}
+  - component: {fileID: 4763263804015764617}
   m_Layer: 0
   m_Name: RenderableWizard
   m_TagString: Untagged
@@ -127,7 +128,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3446855174543094322
+--- !u!114 &7952199571688589246
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -139,3 +140,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da76709107378c14c8e3eeef16cb3ec4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Animator: {fileID: 4763263804015764617}
+--- !u!95 &4763263804015764617
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3446855174543094321}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: ceabb452892d3e94db96424f2945eb6a, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
