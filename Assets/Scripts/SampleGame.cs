@@ -22,7 +22,7 @@ public class SampleGame : MonoBehaviour {
   [Header("Visualization")]
   public Color[] TileElementColors;
 
-  [Header("Renderin")]
+  [Header("Rendering")]
   public float InterpolationEpsilon = .001f;
 
   [Header("Camera")]
@@ -35,12 +35,16 @@ public class SampleGame : MonoBehaviour {
 
   [Header("Runtime")]
   public Board Board;
+  public PlayerController PlayerController;
+  public AIController AIController;
 
   [Header("State")]
+  public List<InputSnapshot> Inputs = new List<InputSnapshot>();
   public List<Action> Actions = new List<Action>();
   public State CurrentState;
   public int SelectedTileIndex = -1;
   public int SelectedPieceIndex = -1;
+  public bool IsPlayerTurn = true;
 
   public static Tile<Element> GenerateTile() {
     var tile =  new Tile<Element>();
@@ -50,117 +54,6 @@ public class SampleGame : MonoBehaviour {
     tile.South = (Element)UnityEngine.Random.Range(0, 4);
     tile.West = (Element)UnityEngine.Random.Range(0, 4);
     return tile;
-  }
-
-  public static void ConvertInputToActions(SampleGame game) {
-    var mouseDown = Input.GetMouseButtonDown(0);
-    var pickStruckBoard = Physics.Raycast(game.MainCamera.ScreenPointToRay(Input.mousePosition), out RaycastHit hit);
-
-    switch (game.CurrentState) {
-      case State.Base: {
-        if (Input.GetKeyDown(KeyCode.R)) {
-          game.Actions.Add(new Action(Operation.BeginRotateTile));
-        } else if (Input.GetKeyDown(KeyCode.M)) {
-          game.Actions.Add(new Action(Operation.BeginMoveTile));
-        } else if (Input.GetKeyDown(KeyCode.P)) {
-          game.Actions.Add(new Action(Operation.BeginPlaceTile));
-        } else if (Input.GetKeyDown(KeyCode.W)) {
-          game.Actions.Add(new Action(Operation.BeginMoveWizard));
-        } else if (Input.GetKeyDown(KeyCode.D)) {
-          game.Actions.Add(new Action(Operation.BeginMoveDragon));
-        }
-      }
-      break;
-
-      case State.RotateTile: {
-        if (mouseDown && pickStruckBoard) {
-          if (game.Board.Tiles.TryGetIndexForCell(hit.point.FromWorldPosition(), out int tileIndex)) {
-            game.Actions.Add(new Action(Operation.RotateTile, tileIndex));
-          }
-        }
-      }
-      break;
-
-      case State.PlaceTile: {
-        if (mouseDown && pickStruckBoard) {
-          if (game.Board.PlayablePositions.TryGetIndexForCell(hit.point.FromWorldPosition(), out int positionIndex)) {
-            if (!game.Board.Tiles.HasMemberForCell(hit.point.FromWorldPosition())) {
-              game.Actions.Add(new Action(Operation.PlaceTile, positionIndex));
-            }
-          }
-        }
-      }
-      break;
-
-      case State.MoveTile: {
-        if (mouseDown && pickStruckBoard) {
-          if (game.Board.Tiles.TryGetIndexForCell(hit.point.FromWorldPosition(), out int index)) {
-            game.Actions.Add(new Action(Operation.SelectTile, index));
-          }
-        }
-      }
-      break;
-
-      case State.TileToMoveSelected: {
-        if (mouseDown && pickStruckBoard) {
-          if (game.Board.PlayablePositions.TryGetIndexForCell(hit.point.FromWorldPosition(), out int positionIndex)) {
-            var selectedCell = game.Board.Tiles[game.SelectedTileIndex].Cell;
-            var candidateCell = game.Board.PlayablePositions[positionIndex].Cell;
-            
-            if (!game.Board.Tiles.HasMemberForCell(candidateCell) && candidateCell.IsNeighborOf(selectedCell)) {
-              game.Actions.Add(new Action(Operation.MoveTile, candidateCell));
-            }
-          }
-        }
-      }
-      break;
-
-      case State.DragonToMoveSelected: {
-        if (mouseDown && pickStruckBoard) {
-          if (game.Board.Tiles.TryGetIndexForCell(hit.point.FromWorldPosition(), out int tileIndex)) {
-            var selectedCell = game.Board.Dragons[game.SelectedPieceIndex].Cell;
-            var candidateCell = game.Board.Tiles[tileIndex].Cell;
-
-            if (candidateCell.IsNeighborOf(selectedCell) && !game.Board.Dragons.HasMemberForCell(candidateCell)) {
-              game.Actions.Add(new Action(Operation.MoveDragon, candidateCell));
-            }
-          }
-        }
-      }
-      break;
-
-      case State.WizardToMoveSelected: {
-        if (mouseDown && pickStruckBoard) {
-          if (game.Board.Tiles.TryGetIndexForCell(hit.point.FromWorldPosition(), out int tileIndex)) {
-            var selectedCell = game.Board.Wizards[game.SelectedPieceIndex].Cell;
-            var candidateCell = game.Board.Tiles[tileIndex].Cell;
-
-            if (candidateCell.IsNeighborOf(selectedCell) && !game.Board.Wizards.HasMemberForCell(candidateCell)) {
-              game.Actions.Add(new Action(Operation.MoveWizard, candidateCell));
-            }
-          }
-        }
-      }
-      break;
-
-      case State.MoveDragon: {
-        if (mouseDown && pickStruckBoard) {
-          if (game.Board.Dragons.TryGetIndexForCell(hit.point.FromWorldPosition(), out int index)) {
-            game.Actions.Add(new Action(Operation.SelectDragon, index));
-          }
-        }
-      }
-      break;
-
-      case State.MoveWizard: {
-        if (mouseDown && pickStruckBoard) {
-          if (game.Board.Wizards.TryGetIndexForCell(hit.point.FromWorldPosition(), out int index)) {
-            game.Actions.Add(new Action(Operation.SelectWizard, index));
-          }
-        }
-      }
-      break;
-    }
   }
 
   public static void ProcessAction(SampleGame game, in Action action) {
@@ -229,6 +122,7 @@ public class SampleGame : MonoBehaviour {
 
         tile.Element.CardinalRotation = rotation;
         game.Board.Tiles[action.Index] = tile;
+        game.IsPlayerTurn = !game.IsPlayerTurn;
         game.CurrentState = State.Base;
       }
       break;
@@ -240,6 +134,7 @@ public class SampleGame : MonoBehaviour {
         var tileElement = new LayerElement<Tile<Element>, RenderableTile>(cell, tile, renderable);
 
         game.Board.Tiles.Add(tileElement);
+        game.IsPlayerTurn = !game.IsPlayerTurn;
         game.CurrentState = State.Base;
       }
       break;
@@ -262,6 +157,7 @@ public class SampleGame : MonoBehaviour {
 
         game.Board.Tiles.SetCell(game.SelectedTileIndex, action.Cell);
         game.SelectedTileIndex = -1;
+        game.IsPlayerTurn = !game.IsPlayerTurn;
         game.CurrentState = State.Base;
       }
       break;
@@ -269,6 +165,7 @@ public class SampleGame : MonoBehaviour {
       case Operation.MoveDragon: {
         game.Board.Dragons.SetCell(game.SelectedPieceIndex, action.Cell);
         game.SelectedPieceIndex = -1;
+        game.IsPlayerTurn = !game.IsPlayerTurn;
         game.CurrentState = State.Base;
       }
       break;
@@ -276,6 +173,7 @@ public class SampleGame : MonoBehaviour {
       case Operation.MoveWizard: {
         game.Board.Wizards.SetCell(game.SelectedPieceIndex, action.Cell);
         game.SelectedPieceIndex = -1;
+        game.IsPlayerTurn = !game.IsPlayerTurn;
         game.CurrentState = State.Base;
       }
       break;
@@ -284,11 +182,6 @@ public class SampleGame : MonoBehaviour {
         Debug.LogError($"Un-handled Operation: {action.Operation}.");
       break;
     }
-  }
-
-
-  public static void LogAction(Action action) {
-    Debug.Log($"{action.Operation} on frame {Time.frameCount}");
   }
 
   public static void UpdateRenderables(SampleGame game) {
@@ -312,17 +205,31 @@ public class SampleGame : MonoBehaviour {
     }
   }
 
+  public static void LogAction(Action action) {
+    Debug.Log($"{action.Operation}");
+  }
+
   void Awake() {
     Board = new Board(AuthoringBoard, TileSet, BoardRenderables);
+    PlayerController = new PlayerController();
+    AIController = new AIController();
   }
 
   void Update() {
+    Inputs.Clear();
+    Inputs.Add(InputSnapshot.FromGlobalSingletons);
     Actions.Clear();
-    Actions.Add(new Action(Operation.PassTime, Time.deltaTime));
-    ConvertInputToActions(this);
+    if (IsPlayerTurn) {
+      PlayerController.ProcessInputs(this, Inputs, ref Actions);
+    } else {
+      AIController.ProcessInputs(this, Inputs, ref Actions);
+    }
     for (int i = 0; i < Actions.Count; i++) {
       ProcessAction(this, Actions[i]);
+      LogAction(Actions[i]);
     }
+    // Check collisions
+    // Check winning conditions
     UpdateRenderables(this);
   }
 }
