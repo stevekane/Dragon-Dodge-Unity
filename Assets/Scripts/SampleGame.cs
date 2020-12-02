@@ -210,6 +210,7 @@ public class SampleGame : MonoBehaviour {
   }
 
   void Awake() {
+    Random.InitState(1); // TODO: Could be a parameter?
     Board = new Board(AuthoringBoard, TileSet, BoardRenderables);
     PlayerController = new PlayerController();
     AIController = new AIController();

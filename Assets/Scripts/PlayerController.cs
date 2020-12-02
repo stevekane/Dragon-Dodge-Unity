@@ -9,9 +9,10 @@ public class PlayerController {
   }
 
   public void ProcessInput(in SampleGame game, in InputSnapshot input, ref List<Action> Actions) {
-    var mouseDown = input.MouseButtonDown;
     var screenRay = game.MainCamera.ScreenPointToRay(input.MousePosition);
     var rayHitBoard = Physics.Raycast(screenRay, out RaycastHit hit);
+    var didPick = input.MouseButtonDown && rayHitBoard;
+    var hitCell = hit.point.FromWorldPosition();
 
     switch (game.CurrentState) {
       case SampleGame.State.Base: {
@@ -19,7 +20,7 @@ public class PlayerController {
           Actions.Add(new Action(Operation.BeginRotateTile));
         } else if (input.MDown) {
           Actions.Add(new Action(Operation.BeginMoveTile));
-        } else if (input.PDown) {
+        } else if (input.PDown && game.Board.ContainsEmptyPositions()) {
           Actions.Add(new Action(Operation.BeginPlaceTile));
         } else if (input.WDown) {
           Actions.Add(new Action(Operation.BeginMoveWizard));
@@ -30,30 +31,24 @@ public class PlayerController {
       break;
 
       case SampleGame.State.RotateTile: {
-        if (mouseDown && rayHitBoard) {
-          if (game.Board.Tiles.TryGetIndexForCell(hit.point.FromWorldPosition(), out int tileIndex)) {
-            Actions.Add(new Action(Operation.RotateTile, tileIndex));
-          }
+        if (didPick && game.Board.Tiles.TryGetIndexForCell(hitCell, out int tileIndex)) {
+          Actions.Add(new Action(Operation.RotateTile, tileIndex));
         }
       }
       break;
 
       case SampleGame.State.PlaceTile: {
-        if (mouseDown && rayHitBoard) {
-          // check if this is a valid playable position
-          if (game.Board.PlayablePositions.TryGetIndexForCell(hit.point.FromWorldPosition(), out int positionIndex)) {
-            // check if this cell already contains a tile
-            if (!game.Board.Tiles.HasMemberForCell(hit.point.FromWorldPosition())) {
-              Actions.Add(new Action(Operation.PlaceTile, positionIndex));
-            }
+        if (didPick && game.Board.PlayablePositions.TryGetIndexForCell(hitCell, out int index)) {
+          if (!game.Board.Tiles.HasMemberForCell(hitCell)) {
+            Actions.Add(new Action(Operation.PlaceTile, index));
           }
         }
       }
       break;
 
       case SampleGame.State.MoveTile: {
-        if (mouseDown && rayHitBoard) {
-          if (game.Board.Tiles.TryGetIndexForCell(hit.point.FromWorldPosition(), out int index)) {
+        if (didPick && game.Board.Tiles.TryGetIndexForCell(hitCell, out int index)) {
+          if (game.Board.TileHasMove(index)) {
             Actions.Add(new Action(Operation.SelectTile, index));
           }
         }
@@ -61,61 +56,57 @@ public class PlayerController {
       break;
 
       case SampleGame.State.TileToMoveSelected: {
-        if (mouseDown && rayHitBoard) {
-          if (game.Board.PlayablePositions.TryGetIndexForCell(hit.point.FromWorldPosition(), out int positionIndex)) {
-            var selectedCell = game.Board.Tiles[game.SelectedTileIndex].Cell;
-            var candidateCell = game.Board.PlayablePositions[positionIndex].Cell;
-            
-            if (!game.Board.Tiles.HasMemberForCell(candidateCell) && candidateCell.IsNeighborOf(selectedCell)) {
-              Actions.Add(new Action(Operation.MoveTile, candidateCell));
-            }
+        if (didPick && game.Board.PlayablePositions.TryGetIndexForCell(hitCell, out int index)) {
+          var candidateCell = game.Board.PlayablePositions[index].Cell;
+          var selectedCell = game.Board.Tiles[game.SelectedTileIndex].Cell;
+          var isNeighbor = candidateCell.IsNeighborOf(selectedCell);
+          var isEmpty = !game.Board.Tiles.HasMemberForCell(candidateCell);
+          
+          if (isNeighbor && isEmpty) {
+            Actions.Add(new Action(Operation.MoveTile, candidateCell));
           }
         }
       }
       break;
 
       case SampleGame.State.DragonToMoveSelected: {
-        if (mouseDown && rayHitBoard) {
-          if (game.Board.Tiles.TryGetIndexForCell(hit.point.FromWorldPosition(), out int tileIndex)) {
-            var selectedCell = game.Board.Dragons[game.SelectedPieceIndex].Cell;
-            var candidateCell = game.Board.Tiles[tileIndex].Cell;
+        if (didPick && game.Board.Tiles.TryGetIndexForCell(hitCell, out int index)) {
+          var candidateCell = game.Board.Tiles[index].Cell;
+          var selectedCell = game.Board.Dragons[game.SelectedPieceIndex].Cell;
+          var isNeighbor = candidateCell.IsNeighborOf(selectedCell);
+          var doesNotAlreadyHaveADragon = !game.Board.Dragons.HasMemberForCell(candidateCell);
 
-            if (candidateCell.IsNeighborOf(selectedCell) && !game.Board.Dragons.HasMemberForCell(candidateCell)) {
-              Actions.Add(new Action(Operation.MoveDragon, candidateCell));
-            }
+          if (isNeighbor && doesNotAlreadyHaveADragon) {
+            Actions.Add(new Action(Operation.MoveDragon, candidateCell));
           }
         }
       }
       break;
 
       case SampleGame.State.WizardToMoveSelected: {
-        if (mouseDown && rayHitBoard) {
-          if (game.Board.Tiles.TryGetIndexForCell(hit.point.FromWorldPosition(), out int tileIndex)) {
-            var selectedCell = game.Board.Wizards[game.SelectedPieceIndex].Cell;
-            var candidateCell = game.Board.Tiles[tileIndex].Cell;
+        if (didPick && game.Board.Tiles.TryGetIndexForCell(hitCell, out int index)) {
+          var candidateCell = game.Board.Tiles[index].Cell;
+          var selectedCell = game.Board.Wizards[game.SelectedPieceIndex].Cell;
+          var isNeighbor = candidateCell.IsNeighborOf(selectedCell);
+          var doesNotAlreadyHaveAWizard = !game.Board.Wizards.HasMemberForCell(candidateCell);
 
-            if (candidateCell.IsNeighborOf(selectedCell) && !game.Board.Wizards.HasMemberForCell(candidateCell)) {
-              Actions.Add(new Action(Operation.MoveWizard, candidateCell));
-            }
+          if (isNeighbor && doesNotAlreadyHaveAWizard) {
+            Actions.Add(new Action(Operation.MoveWizard, candidateCell));
           }
         }
       }
       break;
 
       case SampleGame.State.MoveDragon: {
-        if (mouseDown && rayHitBoard) {
-          if (game.Board.Dragons.TryGetIndexForCell(hit.point.FromWorldPosition(), out int index)) {
-            Actions.Add(new Action(Operation.SelectDragon, index));
-          }
+        if (didPick && game.Board.Dragons.TryGetIndexForCell(hitCell, out int index)) {
+          Actions.Add(new Action(Operation.SelectDragon, index));
         }
       }
       break;
 
       case SampleGame.State.MoveWizard: {
-        if (mouseDown && rayHitBoard) {
-          if (game.Board.Wizards.TryGetIndexForCell(hit.point.FromWorldPosition(), out int index)) {
-            Actions.Add(new Action(Operation.SelectWizard, index));
-          }
+        if (didPick && game.Board.Wizards.TryGetIndexForCell(hitCell, out int index)) {
+          Actions.Add(new Action(Operation.SelectWizard, index));
         }
       }
       break;

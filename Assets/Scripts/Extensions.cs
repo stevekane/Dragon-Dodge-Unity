@@ -47,8 +47,8 @@ public static class Extensions {
   }
 
   public static bool TileHasMove(
-  this int tileIndex,
-  in Board board) {
+  this in Board board,
+  in int tileIndex) {
     var tileCell = board.Tiles[tileIndex].Cell;
 
     for (var i = 0; i < board.PlayablePositions.Count; i++) {
@@ -61,6 +61,46 @@ public static class Extensions {
       }
     }
     return false;
+  }
+
+  public static bool WizardHasMove(
+  this in Board board,
+  in int index) {
+    var wizardCell = board.Wizards[index].Cell;
+
+    for (var i = 0; i < board.Tiles.Count; i++) {
+      var candidateCell = board.Tiles[i].Cell;;
+      var isNeighbor = candidateCell.IsNeighborOf(wizardCell);
+      var doesNotAlreadyHaveAWizard = !board.Wizards.HasMemberForCell(candidateCell);
+      var doesNotAlreadyHaveADragon = !board.Dragons.HasMemberForCell(candidateCell);
+
+      if (isNeighbor && doesNotAlreadyHaveAWizard && doesNotAlreadyHaveADragon) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static bool DragonHasMove(
+  this in Board board,
+  in int index) {
+    var dragonCell = board.Dragons[index].Cell;
+
+    for (var i = 0; i < board.Tiles.Count; i++) {
+      var candidateCell = board.Tiles[i].Cell;;
+      var isNeighbor = candidateCell.IsNeighborOf(dragonCell);
+      var doesNotAlreadyHaveADragon = !board.Dragons.HasMemberForCell(candidateCell);
+
+      if (isNeighbor && doesNotAlreadyHaveADragon) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static bool ContainsEmptyPositions(
+  this in Board board) {
+    return board.Tiles.Count < board.PlayablePositions.Count;
   }
 
   public static void SetCell<T, R>(
