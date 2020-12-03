@@ -16,6 +16,6 @@ public class MovementTestsController : MonoBehaviour {
     if (TryGetKeyDown(Keys, out int index)) {
       Wizard.SetNewPath(Wizard.transform.position + Directions[index]);
     }
-    Wizard.Tick(Time.deltaTime);
+    Wizard.Tick(Time.deltaTime, transform.position);
   }
 }

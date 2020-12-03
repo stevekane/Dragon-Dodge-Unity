@@ -45,7 +45,7 @@ public class RenderableWizard : MonoBehaviour {
     MeshRenderer.material = teamIndex % 2 == 0 ? Team1TorchMaterial : Team2TorchMaterial;
   }
 
-  public void Tick(in float dt) {
+  public void Tick(in float dt, in Vector3 tilePosition) {
     switch (CurrentState) {
       case State.Moving: {
         if (RemainingTravelTime > 0) {
@@ -70,7 +70,7 @@ public class RenderableWizard : MonoBehaviour {
       break;
 
       case State.Base: {
-
+        transform.position = tilePosition;
       }
       break;
 

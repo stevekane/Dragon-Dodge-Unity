@@ -155,7 +155,6 @@ public class SampleGame : MonoBehaviour {
 
         if (game.Board.Wizards.TryGetIndexForCell(affectedTile.Cell, out int wizardIndex)) {
           game.Board.Wizards.SetCell(wizardIndex, action.Cell);
-          game.Board.Wizards[wizardIndex].Renderable.SetNewPath(action.Cell.ToWorldPosition());
         }
 
         game.Board.Tiles.SetCell(game.SelectedTileIndex, action.Cell);
@@ -229,6 +228,9 @@ public class SampleGame : MonoBehaviour {
       var position = Vector3.Lerp(e.Renderable.transform.position, e.Cell.ToWorldPosition(), game.InterpolationEpsilon);
       var rotation = Quaternion.Slerp(e.Renderable.transform.rotation, Quaternion.AngleAxis(90f * (int)e.Element.CardinalRotation, Vector3.up), game.InterpolationEpsilon);
 
+      if (game.Board.Wizards.TryGetIndexForCell(e.Cell, out int index)) {
+        game.Board.Wizards[index].Renderable.Tick(Time.deltaTime, position);
+      }
       e.Renderable.SetElements(e.Element);
       e.Renderable.transform.SetPositionAndRotation(position, rotation);
     }
@@ -248,7 +250,6 @@ public class SampleGame : MonoBehaviour {
     }
 
     foreach (var e in game.Board.Wizards) {
-      e.Renderable.Tick(Time.deltaTime);
       e.Renderable.SetTeam(e.Element.TeamIndex);
     }
   }
