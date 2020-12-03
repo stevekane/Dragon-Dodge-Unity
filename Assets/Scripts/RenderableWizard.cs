@@ -6,9 +6,12 @@ public class RenderableWizard : MonoBehaviour {
   public Material Team1Material;
   public Material Team2Material;
 
-  public MeshRenderer WizardMeshRenderer;
+  public SkinnedMeshRenderer MeshRenderer;
+
+  public Vector3 Heading;
+  public Vector3 Destination;
 
   public void SetTeam(in int teamIndex) {
-    WizardMeshRenderer.material = teamIndex % 2 == 0 ? Team1Material : Team2Material;
+    MeshRenderer.material = teamIndex % 2 == 0 ? Team1Material : Team2Material;
   }
 }

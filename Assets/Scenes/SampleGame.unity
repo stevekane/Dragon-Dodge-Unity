@@ -200,7 +200,7 @@ Light:
   m_Type: 1
   m_Shape: 0
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
-  m_Intensity: 0.5
+  m_Intensity: 0.2
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -610,7 +610,9 @@ MonoBehaviour:
   TileSet: {fileID: 11400000, guid: 1f04930b1f551524381652fd3a609fad, type: 2}
   BoardRenderables: {fileID: 11400000, guid: 2cb6bf7087617534dafc5e51af34db72, type: 2}
   InitialRandomSeed: 100
-  InterpolationEpsilon: 0.04
+  InterpolationEpsilon: 0.01
+  DirectionHeadingDotProduct: 1
+  NormalizedMovementSpeed: 0
   Board:
     PlayablePositions: []
     Tiles: []

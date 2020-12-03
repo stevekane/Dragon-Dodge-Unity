@@ -100,6 +100,8 @@ public struct Board {
       var wizard = new Wizard { TeamIndex = team.Index };
       var renderable = RenderableWizard.Instantiate(prefab, initialPosition, transform.rotation);
 
+      renderable.Heading = renderable.transform.forward;
+      renderable.Destination = transform.position;
       Wizards.Add(new LayerElement<Wizard, RenderableWizard>(cell, wizard, renderable));
     }
   }

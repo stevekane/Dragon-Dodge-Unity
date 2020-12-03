@@ -30,6 +30,12 @@ public class SampleGame : MonoBehaviour {
   public int InitialRandomSeed = 1;
   public float InterpolationEpsilon = .001f;
 
+  [Header("Animation Testing ONLY")]
+  [Range(-1, 1)]
+  public float DirectionHeadingDotProduct = 1;
+  [Range(0, 1)]
+  public float NormalizedMovementSpeed = 0;
+
   [Header("Runtime State")]
   public Board Board;
   public PlayerController PlayerController;
@@ -167,7 +173,14 @@ public class SampleGame : MonoBehaviour {
       break;
 
       case Operation.MoveWizard: {
-        game.Board.Wizards.SetCell(game.SelectedPieceIndex, action.Cell);
+        var wizard = game.Board.Wizards[game.SelectedPieceIndex];
+        var destination = action.Cell.ToWorldPosition();
+        var heading = Vector3.Normalize(destination - wizard.Cell.ToWorldPosition());
+
+        wizard.Cell = action.Cell;
+        wizard.Renderable.Destination = destination;
+        wizard.Renderable.Heading = heading;
+        game.Board.Wizards[game.SelectedPieceIndex] = wizard;
         game.SelectedPieceIndex = -1;
         game.IsPlayerTurn = !game.IsPlayerTurn;
         game.CurrentState = State.Base;
@@ -236,8 +249,22 @@ public class SampleGame : MonoBehaviour {
     }
 
     foreach (var e in game.Board.Wizards) {
+      var heading = e.Renderable.Heading.normalized;
+      var currentForward = e.Renderable.transform.forward;
+      var rotation = e.Renderable.transform.rotation;
+      var desiredRotation = Quaternion.LookRotation(heading, Vector3.up);
+
+      // TODO: these are just crude hacky calculations.. should make this more robust soon
+      if (Vector2.Distance(e.Renderable.transform.position, e.Renderable.Destination) > .05) {
+        e.Renderable.Animator.SetFloat("NormalizedMovementSpeed", 1);
+        e.Renderable.Animator.SetFloat("DirectionHeadingDotProduct", Vector3.Dot(currentForward, heading));
+        e.Renderable.transform.rotation = Quaternion.Slerp(rotation, desiredRotation, game.InterpolationEpsilon);
+        e.Renderable.transform.position = Vector3.Lerp(e.Renderable.transform.position, e.Cell.ToWorldPosition(), game.InterpolationEpsilon);
+      } else {
+        e.Renderable.Animator.SetFloat("NormalizedMovementSpeed", 0);
+        e.Renderable.Animator.SetFloat("DirectionHeadingDotProduct", 0);
+      }
       e.Renderable.SetTeam(e.Element.TeamIndex);
-      e.Renderable.transform.position = Vector3.Lerp(e.Renderable.transform.position, e.Cell.ToWorldPosition(), game.InterpolationEpsilon);
     }
   }
 
