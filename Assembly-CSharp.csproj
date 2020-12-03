@@ -36,21 +36,24 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
-     <Compile Include="Assets\Scripts\RenderBox.cs" />
-     <Compile Include="Assets\Scripts\BoardAuthoring.cs" />
-     <Compile Include="Assets\Scripts\SampleGame.cs" />
-     <Compile Include="Assets\Scripts\TileSet.cs" />
-     <Compile Include="Assets\Scripts\TeamAuthoring.cs" />
-     <Compile Include="Assets\Scripts\Action.cs" />
-     <Compile Include="Assets\Scripts\Extensions.cs" />
-     <Compile Include="Assets\Scripts\RenderablePlayablePosition.cs" />
-     <Compile Include="Assets\Scripts\RenderableTile.cs" />
      <Compile Include="Assets\Scripts\RenderableDragon.cs" />
      <Compile Include="Assets\Scripts\RenderableWizard.cs" />
-     <Compile Include="Assets\Scripts\BoardRenderables.cs" />
-     <Compile Include="Assets\Scripts\PlayerController.cs" />
+     <Compile Include="Assets\Scripts\TeamAuthoring.cs" />
      <Compile Include="Assets\Scripts\InputSnapshot.cs" />
+     <Compile Include="Assets\Scripts\PlayerController.cs" />
+     <Compile Include="Assets\Scripts\Action.cs" />
+     <Compile Include="Assets\Scripts\BoardRenderables.cs" />
+     <Compile Include="Assets\Scripts\RenderBox.cs" />
+     <Compile Include="Assets\Scripts\BoardAuthoring.cs" />
+     <Compile Include="Assets\Scripts\RenderablePlayablePosition.cs" />
      <Compile Include="Assets\Scripts\AIController.cs" />
+     <Compile Include="Assets\Scripts\Extensions.cs" />
+     <Compile Include="Assets\Scripts\RenderableTile.cs" />
+     <Compile Include="Assets\Scripts\SampleGame.cs" />
+     <Compile Include="Assets\Scripts\TileSet.cs" />
+     <Compile Include="Assets\Scripts\Tests\MovementTestsController.cs" />
+     <Compile Include="Assets\HandTorch\Scripts\ToggleLight.cs" />
+     <None Include="Assets\HandTorch\Credits.txt" />
     <Reference Include="UnityEngine">
         <HintPath>C:/Program Files/Unity/Hub/Editor/2020.1.3f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>
@@ -597,8 +600,17 @@
     <Reference Include="Unity.VSCode.Editor">
         <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/Unity.VSCode.Editor.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.ProBuilder">
+        <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/Unity.ProBuilder.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.RenderPipelines.Core.Editor">
         <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/Unity.RenderPipelines.Core.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.ProBuilder.Editor">
+        <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/Unity.ProBuilder.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.ProBuilder.AssetIdRemapUtility">
+        <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/Unity.ProBuilder.AssetIdRemapUtility.dll</HintPath>
     </Reference>
     <Reference Include="Unity.RenderPipelines.Core.Runtime">
         <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/Unity.RenderPipelines.Core.Runtime.dll</HintPath>
@@ -624,6 +636,9 @@
     <Reference Include="Unity.VisualStudio.Editor">
         <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/Unity.VisualStudio.Editor.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.ProBuilder.AddOns.Editor">
+        <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/Unity.ProBuilder.AddOns.Editor.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.ShaderGraph.Editor">
         <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/Unity.ShaderGraph.Editor.dll</HintPath>
     </Reference>
@@ -632,18 +647,6 @@
     </Reference>
     <Reference Include="UnityEditor.UI">
         <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.ProBuilder">
-        <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/Unity.ProBuilder.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.ProBuilder.Editor">
-        <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/Unity.ProBuilder.Editor.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.ProBuilder.AssetIdRemapUtility">
-        <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/Unity.ProBuilder.AssetIdRemapUtility.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.ProBuilder.AddOns.Editor">
-        <HintPath>C:/Users/kanes/GameProjects/Dragon-Dodge-Unity/Library/ScriptAssemblies/Unity.ProBuilder.AddOns.Editor.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

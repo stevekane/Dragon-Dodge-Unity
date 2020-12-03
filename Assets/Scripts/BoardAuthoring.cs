@@ -94,14 +94,11 @@ public struct Board {
   public void PlaceWizards(List<GameObject> positionMarkers, RenderableWizard prefab) {
     for (int i = 0; i < positionMarkers.Count; i++) {
       var transform = positionMarkers[i].transform;
-      var initialPosition = transform.position + Vector3.up * 10f;
       var team = positionMarkers[i].GetComponent<TeamAuthoring>();
       var cell = transform.position.FromWorldPosition();
       var wizard = new Wizard { TeamIndex = team.Index };
-      var renderable = RenderableWizard.Instantiate(prefab, initialPosition, transform.rotation);
+      var renderable = RenderableWizard.Instantiate(prefab, transform.position, transform.rotation);
 
-      renderable.Heading = renderable.transform.forward;
-      renderable.Destination = transform.position;
       Wizards.Add(new LayerElement<Wizard, RenderableWizard>(cell, wizard, renderable));
     }
   }

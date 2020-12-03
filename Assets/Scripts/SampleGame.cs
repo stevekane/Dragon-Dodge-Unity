@@ -155,6 +155,7 @@ public class SampleGame : MonoBehaviour {
 
         if (game.Board.Wizards.TryGetIndexForCell(affectedTile.Cell, out int wizardIndex)) {
           game.Board.Wizards.SetCell(wizardIndex, action.Cell);
+          game.Board.Wizards[wizardIndex].Renderable.SetNewPath(action.Cell.ToWorldPosition());
         }
 
         game.Board.Tiles.SetCell(game.SelectedTileIndex, action.Cell);
@@ -175,11 +176,9 @@ public class SampleGame : MonoBehaviour {
       case Operation.MoveWizard: {
         var wizard = game.Board.Wizards[game.SelectedPieceIndex];
         var destination = action.Cell.ToWorldPosition();
-        var heading = Vector3.Normalize(destination - wizard.Cell.ToWorldPosition());
 
         wizard.Cell = action.Cell;
-        wizard.Renderable.Destination = destination;
-        wizard.Renderable.Heading = heading;
+        wizard.Renderable.SetNewPath(destination);
         game.Board.Wizards[game.SelectedPieceIndex] = wizard;
         game.SelectedPieceIndex = -1;
         game.IsPlayerTurn = !game.IsPlayerTurn;
@@ -249,21 +248,7 @@ public class SampleGame : MonoBehaviour {
     }
 
     foreach (var e in game.Board.Wizards) {
-      var heading = e.Renderable.Heading.normalized;
-      var currentForward = e.Renderable.transform.forward;
-      var rotation = e.Renderable.transform.rotation;
-      var desiredRotation = Quaternion.LookRotation(heading, Vector3.up);
-
-      // TODO: these are just crude hacky calculations.. should make this more robust soon
-      if (Vector2.Distance(e.Renderable.transform.position, e.Renderable.Destination) > .05) {
-        e.Renderable.Animator.SetFloat("NormalizedMovementSpeed", 1);
-        e.Renderable.Animator.SetFloat("DirectionHeadingDotProduct", Vector3.Dot(currentForward, heading));
-        e.Renderable.transform.rotation = Quaternion.Slerp(rotation, desiredRotation, game.InterpolationEpsilon);
-        e.Renderable.transform.position = Vector3.Lerp(e.Renderable.transform.position, e.Cell.ToWorldPosition(), game.InterpolationEpsilon);
-      } else {
-        e.Renderable.Animator.SetFloat("NormalizedMovementSpeed", 0);
-        e.Renderable.Animator.SetFloat("DirectionHeadingDotProduct", 0);
-      }
+      e.Renderable.Tick(Time.deltaTime);
       e.Renderable.SetTeam(e.Element.TeamIndex);
     }
   }
