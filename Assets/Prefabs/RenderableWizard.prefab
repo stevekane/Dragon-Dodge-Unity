@@ -27,8 +27,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3446855174016439448}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.25, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalPosition: {x: 0, y: 0.125, z: 0}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 0.25}
   m_Children: []
   m_Father: {fileID: 3446855174543094323}
   m_RootOrder: 0
@@ -141,6 +141,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Animator: {fileID: 4763263804015764617}
+  Team1Material: {fileID: 2100000, guid: 32799cf9d67375c4ab4b4c7a22cbc706, type: 2}
+  Team2Material: {fileID: 2100000, guid: 35180ff8479acc049ad793fef72b3bb8, type: 2}
+  WizardMeshRenderer: {fileID: 3446855174016439451}
 --- !u!95 &4763263804015764617
 Animator:
   serializedVersion: 3

@@ -2,7 +2,7 @@
 using UnityEngine;
 
 public class AIController {
-  static List<int> ShuffledIndexCache = new List<int>();
+  static List<int> Indices = new List<int>();
 
   static Action[] BaseActions = new Action[] { 
     new Action(Operation.BeginRotateTile),
@@ -41,10 +41,10 @@ public class AIController {
   }
 
   static bool TryFindRandomEmptyPlayablePosition(in Board board, out int index) {
-    PopulateIndexArray(board.PlayablePositions.Count, ref ShuffledIndexCache);
-    ShuffleInPlace(ref ShuffledIndexCache);
-    for (int i = 0; i < ShuffledIndexCache.Count; i++) {
-      var candidateIndex = ShuffledIndexCache[i];
+    PopulateIndexArray(board.PlayablePositions.Count, ref Indices);
+    ShuffleInPlace(ref Indices);
+    for (int i = 0; i < Indices.Count; i++) {
+      var candidateIndex = Indices[i];
       var candidateCell = board.PlayablePositions[candidateIndex].Cell;
 
       if (!board.Tiles.HasMemberForCell(candidateCell)) {
@@ -57,10 +57,10 @@ public class AIController {
   }
 
   static bool TryFindRandomMovableTile(in Board board, out int index) {
-    PopulateIndexArray(board.Tiles.Count, ref ShuffledIndexCache);
-    ShuffleInPlace(ref ShuffledIndexCache);
-    for (int i = 0; i < ShuffledIndexCache.Count; i++) {
-      var candidateIndex = ShuffledIndexCache[i];
+    PopulateIndexArray(board.Tiles.Count, ref Indices);
+    ShuffleInPlace(ref Indices);
+    for (int i = 0; i < Indices.Count; i++) {
+      var candidateIndex = Indices[i];
 
       if (board.TileHasMove(candidateIndex)) {
         index = candidateIndex;
@@ -72,10 +72,10 @@ public class AIController {
   }
 
   static bool TryFindRandomEmptyNeighborCell(in Board board, in int tileIndex, out Vector2Int cell) {
-    Neighbors(board.PlayablePositions, board.Tiles[tileIndex].Cell, ref ShuffledIndexCache);
-    ShuffleInPlace(ref ShuffledIndexCache);
-    for (int i = 0; i < ShuffledIndexCache.Count; i++) {
-      var candidateIndex = ShuffledIndexCache[i];
+    Neighbors(board.PlayablePositions, board.Tiles[tileIndex].Cell, ref Indices);
+    ShuffleInPlace(ref Indices);
+    for (int i = 0; i < Indices.Count; i++) {
+      var candidateIndex = Indices[i];
       var candidateCell = board.PlayablePositions[candidateIndex].Cell;
 
       if (!board.Tiles.HasMemberForCell(candidateCell)) {
@@ -88,10 +88,10 @@ public class AIController {
   }
 
   static bool TryFindRandomValidCellForDragonMove(in Board board, in int dragonIndex, out Vector2Int cell) {
-    Neighbors(board.Tiles, board.Dragons[dragonIndex].Cell, ref ShuffledIndexCache);
-    ShuffleInPlace(ref ShuffledIndexCache);
-    for (int i = 0; i < ShuffledIndexCache.Count; i++) {
-      var candidateIndex = ShuffledIndexCache[i];
+    Neighbors(board.Tiles, board.Dragons[dragonIndex].Cell, ref Indices);
+    ShuffleInPlace(ref Indices);
+    for (int i = 0; i < Indices.Count; i++) {
+      var candidateIndex = Indices[i];
       var candidateCell = board.Tiles[candidateIndex].Cell;
       var doesNotAlreadyHaveADragon = !board.Dragons.HasMemberForCell(candidateCell);
 
@@ -105,10 +105,10 @@ public class AIController {
   }
 
   static bool TryFindRandomValidCellForWizardMove(in Board board, in int wizardIndex, out Vector2Int cell) {
-    Neighbors(board.Tiles, board.Wizards[wizardIndex].Cell, ref ShuffledIndexCache);
-    ShuffleInPlace(ref ShuffledIndexCache);
-    for (int i = 0; i < ShuffledIndexCache.Count; i++) {
-      var candidateIndex = ShuffledIndexCache[i];
+    Neighbors(board.Tiles, board.Wizards[wizardIndex].Cell, ref Indices);
+    ShuffleInPlace(ref Indices);
+    for (int i = 0; i < Indices.Count; i++) {
+      var candidateIndex = Indices[i];
       var candidateCell = board.Tiles[candidateIndex].Cell;
       var doesNotAlreadyHaveADragon = !board.Dragons.HasMemberForCell(candidateCell);
       var doesNotAlreadyHaveAWizard = !board.Wizards.HasMemberForCell(candidateCell);
@@ -123,10 +123,10 @@ public class AIController {
   }
 
   static bool TryFindRandomMovableWizard(in Board board, out int index) {
-    PopulateIndexArray(board.Wizards.Count, ref ShuffledIndexCache);
-    ShuffleInPlace(ref ShuffledIndexCache);
-    for (var i = 0; i < ShuffledIndexCache.Count; i++) {
-      var candidateIndex = ShuffledIndexCache[i];
+    PopulateIndexArray(board.Wizards.Count, ref Indices);
+    ShuffleInPlace(ref Indices);
+    for (var i = 0; i < Indices.Count; i++) {
+      var candidateIndex = Indices[i];
 
       if (board.WizardHasMove(candidateIndex)) {
         index = candidateIndex;
@@ -138,10 +138,10 @@ public class AIController {
   }
 
   static bool TryFindRandomMovableDragon(in Board board, out int index) {
-    PopulateIndexArray(board.Dragons.Count, ref ShuffledIndexCache);
-    ShuffleInPlace(ref ShuffledIndexCache);
-    for (var i = 0; i < ShuffledIndexCache.Count; i++) {
-      var candidateIndex = ShuffledIndexCache[i];
+    PopulateIndexArray(board.Dragons.Count, ref Indices);
+    ShuffleInPlace(ref Indices);
+    for (var i = 0; i < Indices.Count; i++) {
+      var candidateIndex = Indices[i];
 
       if (board.DragonHasMove(candidateIndex)) {
         index = candidateIndex;

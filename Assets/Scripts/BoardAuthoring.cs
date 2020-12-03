@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public enum Element { Earth, Fire, Air, Water }
 
@@ -56,19 +57,23 @@ public struct Board {
 
   public void PopulatePlayablePositions(List<GameObject> positionMarkers, RenderablePlayablePosition prefab) {
     for (int i = 0; i < positionMarkers.Count; i++) {
-      var cell = positionMarkers[i].transform.position.FromWorldPosition();
+      var transform = positionMarkers[i].transform;
+      var cell = transform.position.FromWorldPosition();
       var position = default(PlayablePosition);
-      var renderable = RenderablePlayablePosition.Instantiate(prefab);
+      var renderable = RenderablePlayablePosition.Instantiate(prefab, transform.position, transform.rotation);
 
+      renderable.gameObject.SetActive(false);
       PlayablePositions.Add(new LayerElement<PlayablePosition, RenderablePlayablePosition>(cell, position, renderable));
     }
   }
 
   public void PlaceTiles(List<GameObject> positionMarkers, Tile<Element>[] tiles, RenderableTile prefab) {
     for (int i = 0; i < tiles.Length; i++) {
-      var cell = positionMarkers[i].transform.position.FromWorldPosition();
+      var transform = positionMarkers[i].transform;
+      var initialPosition = transform.position - Vector3.up * Random.Range(0, 5f);
+      var cell = transform.position.FromWorldPosition();
       var tile = tiles[i];
-      var renderable = RenderableTile.Instantiate(prefab);
+      var renderable = RenderableTile.Instantiate(prefab, initialPosition, transform.rotation);
 
       Tiles.Add(new LayerElement<Tile<Element>, RenderableTile>(cell, tile, renderable));
     }
@@ -76,9 +81,11 @@ public struct Board {
 
   public void PlaceDragons(List<GameObject> positionMarkers, RenderableDragon prefab) {
     for (int i = 0; i < positionMarkers.Count; i++) {
-      var cell = positionMarkers[i].transform.position.FromWorldPosition();
+      var transform = positionMarkers[i].transform;
+      var initialPosition = transform.position + Vector3.up * 10f;
+      var cell = transform.position.FromWorldPosition();
       var dragon = default(Dragon);
-      var renderable = RenderableDragon.Instantiate(prefab);
+      var renderable = RenderableDragon.Instantiate(prefab, initialPosition, transform.rotation);
 
       Dragons.Add(new LayerElement<Dragon, RenderableDragon>(cell, dragon, renderable));
     }
@@ -86,10 +93,12 @@ public struct Board {
 
   public void PlaceWizards(List<GameObject> positionMarkers, RenderableWizard prefab) {
     for (int i = 0; i < positionMarkers.Count; i++) {
+      var transform = positionMarkers[i].transform;
+      var initialPosition = transform.position + Vector3.up * 10f;
       var team = positionMarkers[i].GetComponent<TeamAuthoring>();
-      var cell = positionMarkers[i].transform.position.FromWorldPosition();
+      var cell = transform.position.FromWorldPosition();
       var wizard = new Wizard { TeamIndex = team.Index };
-      var renderable = RenderableWizard.Instantiate(prefab);
+      var renderable = RenderableWizard.Instantiate(prefab, initialPosition, transform.rotation);
 
       Wizards.Add(new LayerElement<Wizard, RenderableWizard>(cell, wizard, renderable));
     }
